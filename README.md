@@ -4,8 +4,9 @@ Laravel-like middleware for Angular
 
 ## Installation / Setup
 
-1. Include 'kjhMiddleware' in your main module
-2. Install & import uiRouter
+1. `bower install kjh-middleware --save` or `npm install kjh-middleware --save`
+2. Include 'kjhMiddleware' in your main module
+3. Install & import uiRouter
 
 ## Usage
 

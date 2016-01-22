@@ -1,0 +1,26 @@
+{
+  "name": "kjh-middleware",
+  "version": "1.0.0",
+  "description": "Laravel-like middleware for angular uiRouter",
+  "main": "kjh-middleware.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oldtimeguitarguy/kjh-middleware.git"
+  },
+  "keywords": [
+    "middleware",
+    "laravel",
+    "angular",
+    "angular",
+    "ui-router"
+  ],
+  "author": "Karl Hepler <karl.hepler@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oldtimeguitarguy/kjh-middleware/issues"
+  },
+  "homepage": "https://github.com/oldtimeguitarguy/kjh-middleware#readme"
+}

@@ -1,0 +1,25 @@
+{
+  "name": "kjh-middleware",
+  "description": "Laravel-like middleware for angular uiRouter",
+  "main": "kjh-middleware.js",
+  "authors": [
+    "Karl Hepler <karl.hepler@gmail.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "middleware",
+    "laravel",
+    "angular",
+    "angular",
+    "ui-router"
+  ],
+  "homepage": "https://github.com/oldtimeguitarguy/kjh-middleware",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
