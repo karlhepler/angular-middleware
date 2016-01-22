@@ -80,7 +80,7 @@ function middlewareProvider() {
 	};
 
 	this.$get = [
-	'Middleware', '$injector', '$q',
+	'$injector', '$q',
 	function middlewareFactory($injector, $q) {
 
 		var Middleware = function(bypass, map, $injector, $q) {
