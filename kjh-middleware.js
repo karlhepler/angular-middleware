@@ -46,7 +46,9 @@ function($rootScope, $state, middleware) {
 		    }
 		    
 		    event.preventDefault();
-		    $state.go(m[1]);
+		    
+		    // Redirect, allowing reloading and preventing url param inheritance
+		    return $state.transitionTo(m[1], null, { location: true, inherit: false, relative: $state.$current, notify: true, reload: true });
 		}
 
 	});
