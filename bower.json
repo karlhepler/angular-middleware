@@ -1,7 +1,8 @@
 {
-  "name": "kjh-middleware",
-  "description": "Laravel-like middleware for angular uiRouter",
-  "main": "kjh-middleware.js",
+  "name": "angular-middleware",
+  "version": "2.0.0",
+  "description": "Laravel-like middleware for angular ui.router and ngRoute",
+  "main": "dist/angular-middleware.min.js",
   "authors": [
     "Karl Hepler <karl.hepler@gmail.com>"
   ],
@@ -11,9 +12,12 @@
     "laravel",
     "angular",
     "angular",
-    "ui-router"
+    "ui-router",
+	"ngRoute",
+	"ui.router",
+	"angular-route"
   ],
-  "homepage": "https://github.com/oldtimeguitarguy/kjh-middleware",
+  "homepage": "https://github.com/oldtimeguitarguy/angular-middleware",
   "moduleType": [],
   "ignore": [
     "**/.*",
