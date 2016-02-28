@@ -1,6 +1,6 @@
 {
   "name": "angular-middleware",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Laravel-like middleware for angular uiRouter",
   "main": "dist/angular-middleware.min.js",
   "scripts": {
@@ -11,11 +11,14 @@
     "url": "git+https://github.com/oldtimeguitarguy/kjh-middleware.git"
   },
   "keywords": [
-    "middleware",
+	"middleware",
     "laravel",
     "angular",
     "angular",
-    "ui-router"
+    "ui-router",
+	"ngRoute",
+	"ui.router",
+	"angular-route"
   ],
   "author": "Karl Hepler <karl.hepler@gmail.com>",
   "license": "MIT",

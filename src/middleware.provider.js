@@ -2,28 +2,8 @@ var $middleware = function middlewareProvider() {
 	/**
 	 * Create custom middleware mappings
 	 *
-	 * ex:
-	 *
-	 * $middlewareProvider.map({
-	 *		'auth': ['$log', '$http',
-	 *		function redirectIfNotAuthenticated($log, $http) {
-	 *			var self = this;
-	 *			
-	 *			// Make a get request
-	 *			$http.get('/is-authenticated')
-	 *
-	 *			// The get request succeeded
-	 *			.then(function success() {
-	 *				self.next();
-	 *			},
-	 *
-	 *			// The get request failed
-	 *			function fail(err) {
-	 *				$log.error(err);
-	 *				self.redirectTo('/');
-	 *			});
-	 *		}]
-	 * });
+	 * @param {object} customMappings
+	 * @return {void}
 	 */
 	this.map = function map(customMappings) {
 		// Make sure customMappings is an object
@@ -35,6 +15,33 @@ var $middleware = function middlewareProvider() {
 		mappings = customMappings;
 	};
 
-	// $get the middleware factory
+	/**
+	 * Determine if we want to bypass all middleware.
+	 * This is good for debugging.
+	 *
+	 * @param {boolean} enableBypass
+	 * @return {void}
+	 */
+	this.bypassAll = function bypassAll(enableBypass) {
+		// Make sure enableBypass is boolean
+		if ( typeof enableBypass !== 'boolean' ) {
+			throw 'You must provide bypassAll with a boolean value!';
+		}
+
+		// Set it!
+		bypassAll = enableBypass;
+	};
+
+	this.global = function global(customGlobalMiddleware) {
+		// Make sure it's a string or an array
+		if ( typeof customGlobalMiddleware !== 'string' && !angular.isArray(customGlobalMiddleware) ) {
+			throw 'You must provide a string, a string separated by pipes, or an array of middleware names';
+		}
+
+		// Set it... and don't forget it.
+		globalMiddleware.middleware = customGlobalMiddleware;
+	};
+
+	/** This is the provider's entry point */
 	this.$get = $middlewareFactory;
 };

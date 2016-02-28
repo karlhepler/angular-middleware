@@ -1,10 +1,11 @@
 angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 
-.config(['$stateProvider', function($stateProvider) {
+.config(['$stateProvider',
+function($stateProvider) {
 	// Init resolve:{} to all states
 	// https://github.com/angular-ui/ui-router/issues/1165
 	$stateProvider.decorator('path', function(state, parentFn) {
-		if (state.self.resolve === undefined) {
+		if ( typeof state.self.resolve === 'undefined' ) {
 			state.self.resolve = {};
 			state.resolve = state.self.resolve;
 		}
@@ -12,7 +13,8 @@ angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 	});
 }])
 
-.run(['$rootScope', '$state', '$middleware', function($rootScope, $state, $middleware) {
+.run(['$rootScope', '$state', '$middleware',
+function($rootScope, $state, $middleware) {
 	/**
 	 * Handle middleware
 	 */
@@ -32,12 +34,18 @@ angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 
 		// Only proceed if there is a match to the pattern
 		if ((match = pattern.exec(error)) !== null) {
-			
 			// Prevent state change error from working normally
 			event.preventDefault();
 			
 			// Redirect, allowing reloading and preventing url param inheritance
-			return $state.transitionTo(match[1], null, { location: true, inherit: false, relative: $state.$current, notify: true, reload: true });
+			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
+			return $state.transitionTo(match[1], null, {
+				location: true,
+				inherit: false,
+				relative: $state.$current,
+				notify: true,
+				reload: true
+			});
 		}
 	});
-}])
+}]);

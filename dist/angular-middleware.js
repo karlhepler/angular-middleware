@@ -5,6 +5,10 @@
 // because this is concatinated
 // BEFORE the provider, which defines it
 var mappings = {};
+var bypassAll = false;
+var globalMiddleware = {
+	middleware: []
+};
 
 var $middlewareFactory = [
 '$injector', '$q',
@@ -38,7 +42,7 @@ function middlewareFactory($injector, $q) {
 	 */
 	return function initialize(toRoute, toParams) {
 		// Return early if the toRoute doesn't have middleware
-		if ( !hasMiddleware(toRoute) ) return;
+		if ( !hasMiddleware(globalMiddleware) && !hasMiddleware(toRoute) ) return;
 
 		// Store a copy of the route parameters in the request
 		request.params = angular.copy(toParams);
@@ -46,14 +50,27 @@ function middlewareFactory($injector, $q) {
 		// Set the middleware index to 0
 		middleware.index = 0;
 
-		// Set the middleware names
-		middleware.names = getMiddlewareNames(toRoute);
-		
+		// Set the middleware names.
+		// Make sure the globals are first, then concat toRoute
+		middleware.names =
+			getMiddlewareNames(globalMiddleware)
+			.concat(getMiddlewareNames(toRoute));
+
 		// Create a deferred promise
 		middleware.resolution = $q.defer();
 
-		// Process the first middleware
-		middleware.next();
+		// If we are bypassing everything,
+		// then go ahead and resolve now
+		if ( bypassAll ) {
+			middleware.resolution.resolve();
+		}
+
+		// We're not bypassing it,
+		// so process that first middleware!
+		else {
+			// Process the first middleware
+			middleware.next();
+		}
 
 		// Return the promise
 		return middleware.resolution.promise;
@@ -77,9 +94,12 @@ function middlewareFactory($injector, $q) {
 	 * @returns {array}
 	 */
 	function getMiddlewareNames(route) {
+		// Return the middleware names as an array
 		return route.middleware instanceof Array
 			? route.middleware
-			: route.middleware.split('|');
+			: typeof route.middleware === 'undefined'
+				? []
+				: route.middleware.split('|');
 	}
 
 	/**
@@ -128,28 +148,8 @@ var $middleware = function middlewareProvider() {
 	/**
 	 * Create custom middleware mappings
 	 *
-	 * ex:
-	 *
-	 * $middlewareProvider.map({
-	 *		'auth': ['$log', '$http',
-	 *		function redirectIfNotAuthenticated($log, $http) {
-	 *			var self = this;
-	 *			
-	 *			// Make a get request
-	 *			$http.get('/is-authenticated')
-	 *
-	 *			// The get request succeeded
-	 *			.then(function success() {
-	 *				self.next();
-	 *			},
-	 *
-	 *			// The get request failed
-	 *			function fail(err) {
-	 *				$log.error(err);
-	 *				self.redirectTo('/');
-	 *			});
-	 *		}]
-	 * });
+	 * @param {object} customMappings
+	 * @return {void}
 	 */
 	this.map = function map(customMappings) {
 		// Make sure customMappings is an object
@@ -161,21 +161,102 @@ var $middleware = function middlewareProvider() {
 		mappings = customMappings;
 	};
 
-	// $get the middleware factory
+	/**
+	 * Determine if we want to bypass all middleware.
+	 * This is good for debugging.
+	 *
+	 * @param {boolean} enableBypass
+	 * @return {void}
+	 */
+	this.bypassAll = function bypassAll(enableBypass) {
+		// Make sure enableBypass is boolean
+		if ( typeof enableBypass !== 'boolean' ) {
+			throw 'You must provide bypassAll with a boolean value!';
+		}
+
+		// Set it!
+		bypassAll = enableBypass;
+	};
+
+	this.global = function global(customGlobalMiddleware) {
+		// Make sure it's a string or an array
+		if ( typeof customGlobalMiddleware !== 'string' && !angular.isArray(customGlobalMiddleware) ) {
+			throw 'You must provide a string, a string separated by pipes, or an array of middleware names';
+		}
+
+		// Set it... and don't forget it.
+		globalMiddleware.middleware = customGlobalMiddleware;
+	};
+
+	/** This is the provider's entry point */
 	this.$get = $middlewareFactory;
 };
 
 angular.module('ngRoute.middleware', []).provider('$middleware', $middleware)
 
-// @todo: implement ngRoute.middleware!
+.config(['$routeProvider', '$provide',
+function($routeProvider, $provide) {
+	// Init resolve:{} to all routes
+	$provide.decorator('$route', function($delegate) {
+		// Go through each route
+		angular.forEach($delegate.routes, function(route) {
+			// Skip all redirects
+			if ( typeof route.redirectTo !== 'undefined' ) return;
+
+			// If resolve is not yet set, set it!
+			if ( typeof route.resolve === 'undefined' ) {
+				route.resolve = {};
+			}
+		});
+
+		// Return the delegate
+		return $delegate;
+	});
+}])
+
+.run(['$rootScope', '$route', '$location', '$middleware',
+function($rootScope, $route, $location, $middleware) {
+	/**
+	 * Handle middleware
+	 */
+	$rootScope.$on('$routeChangeStart', function(event, next, current) {
+		next.resolve.middleware = function() {
+			return $middleware(next, next.params);
+		};
+	});
+
+	/**
+	 * Handle redirects from middleware
+	 */
+	$rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {
+		var pattern = /redirectTo\:(.*)/; 
+		var match;
+
+		// Only proceed if there is a match to the pattern
+		if ((match = pattern.exec(rejection)) !== null) {
+			// Prevent the route change from working normally
+			event.preventDefault();
+
+			// If the redirect route is the same, then just reload
+			// Make sure to only do this once though - we don't want an infinite loop
+			if ( current.regexp.test(match[1]) ) {
+				return $route.reload();
+			}
+
+			// The path is new, so go there!
+			$location.path(match[1]);
+		}
+	});
+}]);
 
 angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 
-.config(['$stateProvider', function($stateProvider) {
+.config(['$stateProvider',
+function($stateProvider) {
 	// Init resolve:{} to all states
 	// https://github.com/angular-ui/ui-router/issues/1165
 	$stateProvider.decorator('path', function(state, parentFn) {
-		if (state.self.resolve === undefined) {
+		if ( typeof state.self.resolve === 'undefined' ) {
 			state.self.resolve = {};
 			state.resolve = state.self.resolve;
 		}
@@ -183,7 +264,8 @@ angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 	});
 }])
 
-.run(['$rootScope', '$state', '$middleware', function($rootScope, $state, $middleware) {
+.run(['$rootScope', '$state', '$middleware',
+function($rootScope, $state, $middleware) {
 	/**
 	 * Handle middleware
 	 */
@@ -203,13 +285,19 @@ angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 
 		// Only proceed if there is a match to the pattern
 		if ((match = pattern.exec(error)) !== null) {
-			
 			// Prevent state change error from working normally
 			event.preventDefault();
 			
 			// Redirect, allowing reloading and preventing url param inheritance
-			return $state.transitionTo(match[1], null, { location: true, inherit: false, relative: $state.$current, notify: true, reload: true });
+			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
+			return $state.transitionTo(match[1], null, {
+				location: true,
+				inherit: false,
+				relative: $state.$current,
+				notify: true,
+				reload: true
+			});
 		}
 	});
-}])
+}]);
 }(angular));

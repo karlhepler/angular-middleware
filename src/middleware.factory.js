@@ -2,6 +2,10 @@
 // because this is concatinated
 // BEFORE the provider, which defines it
 var mappings = {};
+var bypassAll = false;
+var globalMiddleware = {
+	middleware: []
+};
 
 var $middlewareFactory = [
 '$injector', '$q',
@@ -35,7 +39,7 @@ function middlewareFactory($injector, $q) {
 	 */
 	return function initialize(toRoute, toParams) {
 		// Return early if the toRoute doesn't have middleware
-		if ( !hasMiddleware(toRoute) ) return;
+		if ( !hasMiddleware(globalMiddleware) && !hasMiddleware(toRoute) ) return;
 
 		// Store a copy of the route parameters in the request
 		request.params = angular.copy(toParams);
@@ -43,14 +47,27 @@ function middlewareFactory($injector, $q) {
 		// Set the middleware index to 0
 		middleware.index = 0;
 
-		// Set the middleware names
-		middleware.names = getMiddlewareNames(toRoute);
-		
+		// Set the middleware names.
+		// Make sure the globals are first, then concat toRoute
+		middleware.names =
+			getMiddlewareNames(globalMiddleware)
+			.concat(getMiddlewareNames(toRoute));
+
 		// Create a deferred promise
 		middleware.resolution = $q.defer();
 
-		// Process the first middleware
-		middleware.next();
+		// If we are bypassing everything,
+		// then go ahead and resolve now
+		if ( bypassAll ) {
+			middleware.resolution.resolve();
+		}
+
+		// We're not bypassing it,
+		// so process that first middleware!
+		else {
+			// Process the first middleware
+			middleware.next();
+		}
 
 		// Return the promise
 		return middleware.resolution.promise;
@@ -74,9 +91,12 @@ function middlewareFactory($injector, $q) {
 	 * @returns {array}
 	 */
 	function getMiddlewareNames(route) {
+		// Return the middleware names as an array
 		return route.middleware instanceof Array
 			? route.middleware
-			: route.middleware.split('|');
+			: typeof route.middleware === 'undefined'
+				? []
+				: route.middleware.split('|');
 	}
 
 	/**
