@@ -121,7 +121,7 @@ function($middlewareProvider)] {
  * Each middleware is processed in the order you list them.
  * 
  * The principle is the same for ui.router and ngRoute.
- * I'll show you both just to cover all the bases.
+ * I'll show you both to make sure the dead horse is sufficiently beaten.
  */
  
  /** ui.router */
