@@ -92,7 +92,7 @@ function($middlewareProvider)] {
 		/** It will wait for async requests too! */
 		'async-auth': ['$http', function asyncAuth($http) {
 			// We'll need access to "this" in a deeper context
-			var self = this;
+			var request = this;
 			
 			// Grab something from the server
 			$http.get('/verify')
@@ -100,14 +100,14 @@ function($middlewareProvider)] {
 			// The server has responded!
 			.then(function success(res) {
 				if ( res.isVerified ) {
-					return self.next();
+					return request.next();
 				}
 				
-				self.redirectTo('another-state-or-path');
+				request.redirectTo('another-state-or-path');
 			},
 			
 			function fail(err) {
-				self.redirectTo('another-state-or-path');
+				request.redirectTo('another-state-or-path');
 			});
 		}]
 		
