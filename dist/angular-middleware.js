@@ -238,7 +238,6 @@ function($rootScope, $route, $location, $middleware) {
 			event.preventDefault();
 
 			// If the redirect route is the same, then just reload
-			// Make sure to only do this once though - we don't want an infinite loop
 			if ( current.regexp.test(match[1]) ) {
 				return $route.reload();
 			}
