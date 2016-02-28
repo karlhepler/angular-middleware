@@ -58,16 +58,11 @@ function middlewareFactory($injector, $q) {
 
 		// If we are bypassing everything,
 		// then go ahead and resolve now
-		if ( bypassAll ) {
-			middleware.resolution.resolve();
-		}
+		if ( bypassAll ) middleware.resolution.resolve();
 
 		// We're not bypassing it,
 		// so process that first middleware!
-		else {
-			// Process the first middleware
-			middleware.next();
-		}
+		else middleware.next();
 
 		// Return the promise
 		return middleware.resolution.promise;
