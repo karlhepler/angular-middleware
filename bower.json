@@ -1,6 +1,6 @@
 {
   "name": "angular-middleware",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Laravel-like middleware for angular ui.router and ngRoute",
   "main": "dist/angular-middleware.min.js",
   "authors": [

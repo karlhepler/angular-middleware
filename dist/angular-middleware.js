@@ -61,16 +61,11 @@ function middlewareFactory($injector, $q) {
 
 		// If we are bypassing everything,
 		// then go ahead and resolve now
-		if ( bypassAll ) {
-			middleware.resolution.resolve();
-		}
+		if ( bypassAll ) middleware.resolution.resolve();
 
 		// We're not bypassing it,
 		// so process that first middleware!
-		else {
-			// Process the first middleware
-			middleware.next();
-		}
+		else middleware.next();
 
 		// Return the promise
 		return middleware.resolution.promise;
@@ -194,33 +189,26 @@ var $middleware = function middlewareProvider() {
 
 angular.module('ngRoute.middleware', []).provider('$middleware', $middleware)
 
-.config(['$routeProvider', '$provide',
-function($routeProvider, $provide) {
+.config(['$provide', function configureRouteProvider($provide) {
 	// Init resolve:{} to all routes
-	$provide.decorator('$route', function($delegate) {
-		// Go through each route
-		angular.forEach($delegate.routes, function(route) {
-			// Skip all redirects
-			if ( typeof route.redirectTo !== 'undefined' ) return;
-
-			// If resolve is not yet set, set it!
-			if ( typeof route.resolve === 'undefined' ) {
-				route.resolve = {};
-			}
+	$provide.decorator('$route', ['$delegate', function decorateRoute($delegate) {
+		// Go through each route & make sure resolve is set on all children
+		angular.forEach($delegate.routes, function addResolveObject(route) {
+			route.resolve = route.resolve || {};
 		});
 
 		// Return the delegate
 		return $delegate;
-	});
+	}]);
 }])
 
 .run(['$rootScope', '$route', '$location', '$middleware',
-function($rootScope, $route, $location, $middleware) {
+function handleMiddleware($rootScope, $route, $location, $middleware) {
 	/**
 	 * Handle middleware
 	 */
-	$rootScope.$on('$routeChangeStart', function(event, next, current) {
-		next.resolve.middleware = function() {
+	$rootScope.$on('$routeChangeStart', function routeChangeStarted(event, next, current) {
+		next.resolve.middleware = function resolveNextMiddleware() {
 			return $middleware(next, next.params);
 		};
 	});
@@ -228,7 +216,7 @@ function($rootScope, $route, $location, $middleware) {
 	/**
 	 * Handle redirects from middleware
 	 */
-	$rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {
+	$rootScope.$on('$routeChangeError', function handleMiddlewareRedirects(event, current, previous, rejection) {
 		var pattern = /redirectTo\:(.*)/; 
 		var match;
 
@@ -250,8 +238,7 @@ function($rootScope, $route, $location, $middleware) {
 
 angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 
-.config(['$stateProvider',
-function($stateProvider) {
+.config(['$stateProvider', function configureStateProvider($stateProvider) {
 	// Init resolve:{} to all states
 	// https://github.com/angular-ui/ui-router/issues/1165
 	$stateProvider.decorator('path', function(state, parentFn) {
@@ -264,13 +251,13 @@ function($stateProvider) {
 }])
 
 .run(['$rootScope', '$state', '$middleware',
-function($rootScope, $state, $middleware) {
+function handleMiddleware($rootScope, $state, $middleware) {
 	/**
 	 * Handle middleware
 	 */
-	$rootScope.$on('$stateChangeStart', function(event, toState, toParams) {
+	$rootScope.$on('$stateChangeStart', function stateChangeStarted(event, toState, toParams) {
 		// Force the state to resolve the middleware before loading
-		toState.resolve.middleware = function() {
+		toState.resolve.middleware = function resolveNextMiddleware() {
 			return $middleware(toState, toParams);
 		};
 	});
@@ -278,7 +265,7 @@ function($rootScope, $state, $middleware) {
 	/**
 	 * Handle redirects from middleware
 	 */
-	$rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
+	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
 		var pattern = /redirectTo\:(.*)/; 
 		var match;
 

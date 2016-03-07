@@ -1,32 +1,25 @@
 angular.module('ngRoute.middleware', []).provider('$middleware', $middleware)
 
-.config(['$routeProvider', '$provide',
-function($routeProvider, $provide) {
+.config(['$provide', function configureRouteProvider($provide) {
 	// Init resolve:{} to all routes
-	$provide.decorator('$route', function($delegate) {
-		// Go through each route
-		angular.forEach($delegate.routes, function(route) {
-			// Skip all redirects
-			if ( typeof route.redirectTo !== 'undefined' ) return;
-
-			// If resolve is not yet set, set it!
-			if ( typeof route.resolve === 'undefined' ) {
-				route.resolve = {};
-			}
+	$provide.decorator('$route', ['$delegate', function decorateRoute($delegate) {
+		// Go through each route & make sure resolve is set on all children
+		angular.forEach($delegate.routes, function addResolveObject(route) {
+			route.resolve = route.resolve || {};
 		});
 
 		// Return the delegate
 		return $delegate;
-	});
+	}]);
 }])
 
 .run(['$rootScope', '$route', '$location', '$middleware',
-function($rootScope, $route, $location, $middleware) {
+function handleMiddleware($rootScope, $route, $location, $middleware) {
 	/**
 	 * Handle middleware
 	 */
-	$rootScope.$on('$routeChangeStart', function(event, next, current) {
-		next.resolve.middleware = function() {
+	$rootScope.$on('$routeChangeStart', function routeChangeStarted(event, next, current) {
+		next.resolve.middleware = function resolveNextMiddleware() {
 			return $middleware(next, next.params);
 		};
 	});
@@ -34,7 +27,7 @@ function($rootScope, $route, $location, $middleware) {
 	/**
 	 * Handle redirects from middleware
 	 */
-	$rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {
+	$rootScope.$on('$routeChangeError', function handleMiddlewareRedirects(event, current, previous, rejection) {
 		var pattern = /redirectTo\:(.*)/; 
 		var match;
 

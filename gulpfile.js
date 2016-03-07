@@ -28,4 +28,8 @@ gulp.task('watch', function watch() {
 	gulp.watch(src, ['build-dev']);
 });
 
+gulp.task('watch-prod', function watchProd() {
+	gulp.watch(src, ['build-prod']);
+});
+
 gulp.task('default', ['build-dev']);

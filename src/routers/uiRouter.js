@@ -1,7 +1,6 @@
 angular.module('ui.router.middleware', []).provider('$middleware', $middleware)
 
-.config(['$stateProvider',
-function($stateProvider) {
+.config(['$stateProvider', function configureStateProvider($stateProvider) {
 	// Init resolve:{} to all states
 	// https://github.com/angular-ui/ui-router/issues/1165
 	$stateProvider.decorator('path', function(state, parentFn) {
@@ -14,13 +13,13 @@ function($stateProvider) {
 }])
 
 .run(['$rootScope', '$state', '$middleware',
-function($rootScope, $state, $middleware) {
+function handleMiddleware($rootScope, $state, $middleware) {
 	/**
 	 * Handle middleware
 	 */
-	$rootScope.$on('$stateChangeStart', function(event, toState, toParams) {
+	$rootScope.$on('$stateChangeStart', function stateChangeStarted(event, toState, toParams) {
 		// Force the state to resolve the middleware before loading
-		toState.resolve.middleware = function() {
+		toState.resolve.middleware = function resolveNextMiddleware() {
 			return $middleware(toState, toParams);
 		};
 	});
@@ -28,7 +27,7 @@ function($rootScope, $state, $middleware) {
 	/**
 	 * Handle redirects from middleware
 	 */
-	$rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
+	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
 		var pattern = /redirectTo\:(.*)/; 
 		var match;
 

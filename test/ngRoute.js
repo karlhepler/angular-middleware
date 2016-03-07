@@ -6,27 +6,38 @@ var test = angular.module('test', [
 test.config(['$middlewareProvider', function($middlewareProvider) {
 
 	$middlewareProvider.map({
-		'test': function() {
-			console.log('middleware', this);
+		'globalMiddleware': function globalMiddleware() {
+			console.log('globalMiddleware', this);
 			this.next();
+		},
+		'routeMiddleware': function routeMiddleware() {
+			console.log('routeMiddleware', this);
+			setTimeout(function timeout() {
+				this.redirectTo('/poop');
+			}.bind(this), 1000);
 		}
 	});
 
-	$middlewareProvider.global('test');
+	$middlewareProvider.global('globalMiddleware');
 }]);
 
 test.config(['$routeProvider', function($routeProvider) {
-	$routeProvider.when('/test', {
+	$routeProvider
+	
+	.when('/test', {
 		template: '<h1>Test</h1>',
 		controller: function() {
 			console.log('CONTROLLER');
-		}
+		},
+		middleware: 'routeMiddleware'
 	})
+
 	.when('/poop', {
 		template: '<h1>Poop</h1>',
 		controller: function() {
 			console.log('POOP');
 		}
 	})	
+
 	.otherwise('/test');
 }]);
