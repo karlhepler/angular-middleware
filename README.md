@@ -21,6 +21,9 @@
 
 ## Configuration & Examples
 
+> [ngRoute Example on Plnkr](https://plnkr.co/edit/wRiXSWG66h4DEh4nyysm?p=preview)
+> [ui.router Example on Plnkr](https://plnkr.co/edit/tgUkr276hnTiVarrbh1d?p=preview)
+
 ```javascript
 // An app with ui.router...
 var app = angular.module('app', [
