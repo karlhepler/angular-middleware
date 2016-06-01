@@ -12,7 +12,7 @@ var $middleware = function middlewareProvider() {
 		}
 
 		// Set the mappings
-		mappings = customMappings;
+		_mappings = customMappings;
 	};
 
 	/**
@@ -29,7 +29,7 @@ var $middleware = function middlewareProvider() {
 		}
 
 		// Set it!
-		bypassAll = enableBypass;
+		_bypassAll = enableBypass;
 	};
 
 	this.global = function global(customGlobalMiddleware) {
@@ -39,7 +39,7 @@ var $middleware = function middlewareProvider() {
 		}
 
 		// Set it... and don't forget it.
-		globalMiddleware.middleware = customGlobalMiddleware;
+		_globalMiddleware.middleware = customGlobalMiddleware;
 	};
 
 	/** This is the provider's entry point */

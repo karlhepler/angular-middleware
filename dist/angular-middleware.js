@@ -4,9 +4,9 @@
 // This has to be declared here
 // because this is concatinated
 // BEFORE the provider, which defines it
-var mappings = {};
-var bypassAll = false;
-var globalMiddleware = {
+var _mappings = {};
+var _bypassAll = false;
+var _globalMiddleware = {
 	middleware: []
 };
 
@@ -42,7 +42,9 @@ function middlewareFactory($injector, $q) {
 	 */
 	return function initialize(toRoute, toParams) {
 		// Return early if the toRoute doesn't have middleware
-		if ( !hasMiddleware(globalMiddleware) && !hasMiddleware(toRoute) ) return;
+		if ( _bypassAll || !hasMiddleware(_globalMiddleware) && !hasMiddleware(toRoute) ) {
+			return $q.resolve();
+		}
 
 		// Store a copy of the route parameters in the request
 		request.params = angular.copy(toParams);
@@ -53,19 +55,14 @@ function middlewareFactory($injector, $q) {
 		// Set the middleware names.
 		// Make sure the globals are first, then concat toRoute
 		middleware.names =
-			getMiddlewareNames(globalMiddleware)
+			getMiddlewareNames(_globalMiddleware)
 			.concat(getMiddlewareNames(toRoute));
 
 		// Create a deferred promise
 		middleware.resolution = $q.defer();
 
-		// If we are bypassing everything,
-		// then go ahead and resolve now
-		if ( bypassAll ) middleware.resolution.resolve();
-
-		// We're not bypassing it,
-		// so process that first middleware!
-		else middleware.next();
+		// Process that first middleware!
+		middleware.next();
 
 		// Return the promise
 		return middleware.resolution.promise;
@@ -78,7 +75,7 @@ function middlewareFactory($injector, $q) {
 	 * @returns {boolean}
 	 */
 	function hasMiddleware(route) {
-		return !!route.middleware;
+		return !!route.middleware && !!route.middleware.length;
 	}
 
 	/**
@@ -104,7 +101,7 @@ function middlewareFactory($injector, $q) {
 	 */
 	function nextMiddleware() {
 		// Get the next middleware
-		var next = mappings[middleware.names[middleware.index++]];
+		var next = _mappings[middleware.names[middleware.index++]];
 
 		// If there is middleware, then invoke it, binding request
 		if ( next ) $injector.invoke(next, request);
@@ -153,7 +150,7 @@ var $middleware = function middlewareProvider() {
 		}
 
 		// Set the mappings
-		mappings = customMappings;
+		_mappings = customMappings;
 	};
 
 	/**
@@ -170,7 +167,7 @@ var $middleware = function middlewareProvider() {
 		}
 
 		// Set it!
-		bypassAll = enableBypass;
+		_bypassAll = enableBypass;
 	};
 
 	this.global = function global(customGlobalMiddleware) {
@@ -180,7 +177,7 @@ var $middleware = function middlewareProvider() {
 		}
 
 		// Set it... and don't forget it.
-		globalMiddleware.middleware = customGlobalMiddleware;
+		_globalMiddleware.middleware = customGlobalMiddleware;
 	};
 
 	/** This is the provider's entry point */
