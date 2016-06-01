@@ -1,8 +1,8 @@
 {
   "name": "angular-middleware",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Laravel-like middleware for angular uiRouter",
-  "main": "dist/angular-middleware.min.js",
+  "main": "dist/angular-middleware.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
