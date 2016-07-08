@@ -66,13 +66,23 @@ function middlewareFactory($injector, $q) {
 	};
 
 	/**
+	 * Gets the route middleware property
+	 * @param {object} toRoute
+	 * @returns {array|string}
+   */
+	function getRouteMiddleware(route) {
+		return route.middleware || ((route.data || {}).vars || {}).middleware;
+	}
+
+	/**
 	 * Determine if the given route has middleware
 	 *
 	 * @param {object} toRoute
 	 * @returns {boolean}
 	 */
 	function hasMiddleware(route) {
-		return !!route.middleware && !!route.middleware.length;
+		var middleware = getRouteMiddleware(route);
+		return !!middleware && !!middleware.length;
 	}
 
 	/**
@@ -83,12 +93,13 @@ function middlewareFactory($injector, $q) {
 	 * @returns {array}
 	 */
 	function getMiddlewareNames(route) {
+		var middleware = getRouteMiddleware(route);
 		// Return the middleware names as an array
-		return route.middleware instanceof Array
-			? route.middleware
-			: typeof route.middleware === 'undefined'
+		return middleware instanceof Array
+			? middleware
+			: typeof middleware === 'undefined'
 				? []
-				: route.middleware.split('|');
+				: middleware.split('|');
 	}
 
 	/**
