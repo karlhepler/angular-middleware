@@ -54,7 +54,7 @@ function middlewareFactory($injector, $q) {
 
 		// Set the middleware names.
 		// Make sure the globals are first, then concat toRoute
-		middleware.names = concatMiddlwareNames([_globalMiddleware, toRoute]);
+		middleware.names = concatMiddlewareNames([_globalMiddleware, toRoute]);
 
 		// Create a deferred promise
 		middleware.resolution = $q.defer();
