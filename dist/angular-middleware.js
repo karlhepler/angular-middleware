@@ -36,13 +36,13 @@ function middlewareFactory($injector, $q) {
 	/**
 	 * Initialize $middleware
 	 *
-	 * @param {object} toRoute
-	 * @param {mixed} toParams
+	 * @param   {object} toRoute
+	 * @param   {mixed}  toParams
 	 * @returns {promise}
 	 */
 	return function initialize(toRoute, toParams) {
-		// Return early if the toRoute doesn't have middleware
-		if ( _bypassAll || !hasMiddleware(_globalMiddleware) && !hasMiddleware(toRoute) ) {
+		// Return if we should bypass
+		if ( shouldBypass(toRoute) ) {
 			return $q.resolve();
 		}
 
@@ -54,9 +54,7 @@ function middlewareFactory($injector, $q) {
 
 		// Set the middleware names.
 		// Make sure the globals are first, then concat toRoute
-		middleware.names =
-			getMiddlewareNames(_globalMiddleware)
-			.concat(getMiddlewareNames(toRoute));
+		middleware.names = concatMiddlwareNames([_globalMiddleware, toRoute]);
 
 		// Create a deferred promise
 		middleware.resolution = $q.defer();
@@ -69,29 +67,97 @@ function middlewareFactory($injector, $q) {
 	};
 
 	/**
+	 * Determine if we should bypass the middleware
+	 *
+	 * @param   {object} route
+	 * @returns {boolean}
+	 */
+	function shouldBypass(route) {
+		// If the bypassAll flag is set,
+		// then we should bypass all - duh
+		if ( _bypassAll ) {
+			return true;
+		}
+
+		// We can only bypass at this point
+		// if there is no middleware to process
+		return !middlewareExists(route);
+	}
+
+	/**
+	 * Determine if any middleware exists
+	 *
+	 * @param   {object} route
+	 * @returns {boolean}
+	 */
+	function middlewareExists(route) {
+		return hasMiddleware(_globalMiddleware)
+			|| hasMiddleware(route);
+	}
+
+	/**
 	 * Determine if the given route has middleware
 	 *
-	 * @param {object} toRoute
+	 * @param   {object} route
 	 * @returns {boolean}
 	 */
 	function hasMiddleware(route) {
-		return !!route.middleware && !!route.middleware.length;
+		var middleware = getRouteMiddleware(route);
+		return !!middleware && !!middleware.length;
+	}
+
+	/**
+	 * Gets the route middleware property
+	 * 
+	 * @param   {object} route
+	 * @returns {array|string}
+   */
+	function getRouteMiddleware(route) {
+		return route.middleware
+			|| ((route.data || {}).vars || {}).middleware;
+	}
+
+	/**
+	 * Concat the middleware names of the given routes
+	 *
+	 * @param  {array} routes
+	 * @return {array}
+	 */
+	function concatMiddlewareNames(routes) {
+		var output = [];
+
+		// Concat each route's middleware names
+		for (var i = 0; i < routes.length; i++) {
+			output.concat(
+				getMiddlewareNames(routes[i])
+			);
+		}
+
+		return output;
 	}
 
 	/**
 	 * Get the middleware names
 	 * from an array or a piped string
 	 *
-	 * @param {object} route
+	 * @param   {object} route
 	 * @returns {array}
 	 */
 	function getMiddlewareNames(route) {
-		// Return the middleware names as an array
-		return route.middleware instanceof Array
-			? route.middleware
-			: typeof route.middleware === 'undefined'
-				? []
-				: route.middleware.split('|');
+		var middleware = getRouteMiddleware(route);
+
+		// If the middleware is an array, just return it
+		if ( middleware instanceof Array ) {
+			return middleware;
+		}
+
+		// If there is no middleware, then return an empty array
+		if ( typeof middleware === 'undefined' ) {
+			return [];
+		}
+
+		// Otherwise, split the pipes & return an array
+		return middleware.split('|');
 	}
 
 	/**

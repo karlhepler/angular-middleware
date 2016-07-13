@@ -1,6 +1,6 @@
 {
   "name": "angular-middleware",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Laravel-like middleware for angular uiRouter",
   "main": "dist/angular-middleware.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oldtimeguitarguy/kjh-middleware.git"
+    "url": "git+https://github.com/oldtimeguitarguy/angular-middleware.git"
   },
   "keywords": [
 	"middleware",
