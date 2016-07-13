@@ -125,7 +125,7 @@ function middlewareFactory($injector, $q) {
 
 		// Concat each route's middleware names
 		for (var i = 0; i < routes.length; i++) {
-			output.concat(
+			output = output.concat(
 				getMiddlewareNames(routes[i])
 			);
 		}
