@@ -212,4 +212,6 @@ function($middlewareProvider)] {
 	* **params** (optional): A params object to be used to populate query parameters _(ngRoute)_ or `$stateParams` _(ui.router)_
 	* **options** (optional): An object of  [transitionTo](https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options) options (only used with ui.router)
 
+* `this.route` is the destination route path
+
 * `this.params` is an object that contains the current route parameters

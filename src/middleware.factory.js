@@ -46,6 +46,9 @@ function middlewareFactory($injector, $q) {
 		// Store a copy of the route parameters in the request
 		request.params = angular.copy(toParams);
 
+		// Store route name in the request
+		request.route = toRoute.name;
+
 		// Set the middleware index to 0
 		middleware.index = 0;
 
