@@ -284,13 +284,13 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$routeChangeError', function handleMiddlewareRedirects(event, current, previous, rejection) {
-		// Only proceed if there is a match to the pattern
+		// Only proceed if it is type redirectTo
 		if (rejection.type === "redirectTo") {
 			// Prevent the route change from working normally
 			event.preventDefault();
 
 			// If the redirect route is the same, then just reload
-			if ( current.regexp.test(match[1]) ) {
+			if ( current.regexp.test(rejection.route) ) {
 				return $route.reload();
 			}
 
@@ -331,7 +331,7 @@ function handleMiddleware($rootScope, $state, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
-		// Only proceed if there is a match to the pattern
+		// Only proceed if it is type redirectTo
 		if (error.type === "redirectTo") {
 			// Prevent state change error from working normally
 			event.preventDefault();

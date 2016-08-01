@@ -28,7 +28,7 @@ function handleMiddleware($rootScope, $state, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
-		// Only proceed if there is a match to the pattern
+		// Only proceed if it is type redirectTo
 		if (error.type === "redirectTo") {
 			// Prevent state change error from working normally
 			event.preventDefault();
