@@ -195,10 +195,10 @@ function middlewareFactory($injector, $q) {
 	 * @returns {void}
 	 */
 	function redirectTo(route, params) {
-		var redirectStr = 'redirectTo:' + route;
-		if (params) {
-			redirectStr = redirectStr + '(' + JSON.stringify(params) + ')';
-		}
-		middleware.resolution.reject(redirectStr);
+		middleware.resolution.reject({
+			type: "redirectTo",
+			route: route,
+			params: params
+		});
 	}
 }];

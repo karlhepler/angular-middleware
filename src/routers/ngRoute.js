@@ -28,11 +28,8 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$routeChangeError', function handleMiddlewareRedirects(event, current, previous, rejection) {
-		var pattern = /redirectTo\:([^\(]*)(\((\{.*\})\))?/;
-		var match;
-
 		// Only proceed if there is a match to the pattern
-		if ((match = pattern.exec(rejection)) !== null) {
+		if (rejection.type === "redirectTo") {
 			// Prevent the route change from working normally
 			event.preventDefault();
 
@@ -42,11 +39,8 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 			}
 
 			// The path is new, so go there!
-			$location.path(match[1]);
-			if (match[3]) {
-				var params = JSON.parse(match[3]);
-				$location.search(params);
-			}
+			$location.path(rejection.route);
+			if (rejection.params) $location.search(rejection.params);
 		}
 	});
 }]);

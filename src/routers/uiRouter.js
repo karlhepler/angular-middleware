@@ -28,19 +28,14 @@ function handleMiddleware($rootScope, $state, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
-		var pattern = /redirectTo\:([^\(]*)(\((\{.*\})\))?/;
-		var match;
-
 		// Only proceed if there is a match to the pattern
-		if ((match = pattern.exec(error)) !== null) {
+		if (error.type === "redirectTo") {
 			// Prevent state change error from working normally
 			event.preventDefault();
 
-			var params = match[3] ? JSON.parse(match[3]) : null;
-
 			// Redirect, allowing reloading and preventing url param inheritance
 			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
-			return $state.transitionTo(match[1], params, {
+			return $state.transitionTo(error.route, error.params, {
 				location: true,
 				inherit: false,
 				relative: $state.$current,

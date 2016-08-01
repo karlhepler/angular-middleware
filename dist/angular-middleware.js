@@ -198,11 +198,11 @@ function middlewareFactory($injector, $q) {
 	 * @returns {void}
 	 */
 	function redirectTo(route, params) {
-		var redirectStr = 'redirectTo:' + route;
-		if (params) {
-			redirectStr = redirectStr + '(' + JSON.stringify(params) + ')';
-		}
-		middleware.resolution.reject(redirectStr);
+		middleware.resolution.reject({
+			type: "redirectTo",
+			route: route,
+			params: params
+		});
 	}
 }];
 
@@ -284,11 +284,8 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$routeChangeError', function handleMiddlewareRedirects(event, current, previous, rejection) {
-		var pattern = /redirectTo\:([^\(]*)(\((\{.*\})\))?/;
-		var match;
-
 		// Only proceed if there is a match to the pattern
-		if ((match = pattern.exec(rejection)) !== null) {
+		if (rejection.type === "redirectTo") {
 			// Prevent the route change from working normally
 			event.preventDefault();
 
@@ -298,11 +295,8 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 			}
 
 			// The path is new, so go there!
-			$location.path(match[1]);
-			if (match[3]) {
-				var params = JSON.parse(match[3]);
-				$location.search(params);
-			}
+			$location.path(rejection.route);
+			if (rejection.params) $location.search(rejection.params);
 		}
 	});
 }]);
@@ -337,19 +331,14 @@ function handleMiddleware($rootScope, $state, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
-		var pattern = /redirectTo\:([^\(]*)(\((\{.*\})\))?/;
-		var match;
-
 		// Only proceed if there is a match to the pattern
-		if ((match = pattern.exec(error)) !== null) {
+		if (error.type === "redirectTo") {
 			// Prevent state change error from working normally
 			event.preventDefault();
 
-			var params = match[3] ? JSON.parse(match[3]) : null;
-
 			// Redirect, allowing reloading and preventing url param inheritance
 			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
-			return $state.transitionTo(match[1], params, {
+			return $state.transitionTo(error.route, error.params, {
 				location: true,
 				inherit: false,
 				relative: $state.$current,
