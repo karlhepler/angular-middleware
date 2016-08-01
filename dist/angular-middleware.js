@@ -197,11 +197,12 @@ function middlewareFactory($injector, $q) {
 	 *
 	 * @returns {void}
 	 */
-	function redirectTo(route, params) {
+	function redirectTo(route, params, options) {
 		middleware.resolution.reject({
 			type: "redirectTo",
 			route: route,
-			params: params
+			params: params,
+			options: options
 		});
 	}
 }];
@@ -336,15 +337,18 @@ function handleMiddleware($rootScope, $state, $middleware) {
 			// Prevent state change error from working normally
 			event.preventDefault();
 
-			// Redirect, allowing reloading and preventing url param inheritance
-			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
-			return $state.transitionTo(error.route, error.params, {
+			// Use provided transitionTo options or use default
+			var options = error.options || {
 				location: true,
 				inherit: false,
 				relative: $state.$current,
 				notify: true,
 				reload: true
-			});
+			};
+
+			// Redirect, allowing reloading and preventing url param inheritance
+			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
+			return $state.transitionTo(error.route, error.params, options);
 		}
 	});
 }]);
