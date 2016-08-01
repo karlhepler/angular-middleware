@@ -89,6 +89,10 @@ function($middlewareProvider)] {
 			this.redirectTo('/another-path', {
 				redirectFrom: 'current-path'
 			});
+
+			// If you are using ui.router,
+			// you can also change transitionTo options
+			this.redirectTo('another-state-name', null, { reload: false });
 		},
 
 		/** Continue, but log the parameters */
@@ -203,7 +207,9 @@ function($middlewareProvider)] {
 
 * `this.next()` **must be called** to resolve the middleware and either go to the next middleware or resolve the route
 
-* `this.redirectTo(<string>, [params])` can be called to immediately redirect to a given path _(ngRoute)_ or state name _(ui.router)_.
-An optional params object can be provided which will be used to populate query parameters _(ngRoute)_ or `$stateParams` _(ui.router)_.
+* `this.redirectTo(dest [,params [,options]])` can be called to immediately redirect
+	* **dest** (required): A path _(ngRoute)_ or state name _(ui.router)_ to redirect to
+	* **params** (optional): A params object to be used to populate query parameters _(ngRoute)_ or `$stateParams` _(ui.router)_
+	* **options** (optional): An object of  [transitionTo](https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options) options (only used with ui.router)
 
 * `this.params` is an object that contains the current route parameters
