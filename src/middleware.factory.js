@@ -10,7 +10,7 @@ var _globalMiddleware = {
 var $middlewareFactory = [
 '$injector', '$q',
 function middlewareFactory($injector, $q) {
-	
+
 	/**
 	 * This object is used to group
 	 * private middleware properties
@@ -105,7 +105,7 @@ function middlewareFactory($injector, $q) {
 
 	/**
 	 * Gets the route middleware property
-	 * 
+	 *
 	 * @param   {object} route
 	 * @returns {array|string}
    */
@@ -194,7 +194,11 @@ function middlewareFactory($injector, $q) {
 	 *
 	 * @returns {void}
 	 */
-	function redirectTo(route) {
-		middleware.resolution.reject('redirectTo:' + route);
+	function redirectTo(route, params) {
+		var redirectStr = 'redirectTo:' + route;
+		if (params) {
+			redirectStr = redirectStr + '(' + JSON.stringify(params) + ')';
+		}
+		middleware.resolution.reject(redirectStr);
 	}
 }];

@@ -28,7 +28,7 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$routeChangeError', function handleMiddlewareRedirects(event, current, previous, rejection) {
-		var pattern = /redirectTo\:(.*)/; 
+		var pattern = /redirectTo\:([^\(]*)(\((\{.*\})\))?/;
 		var match;
 
 		// Only proceed if there is a match to the pattern
@@ -43,6 +43,10 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 
 			// The path is new, so go there!
 			$location.path(match[1]);
+			if (match[3]) {
+				var params = JSON.parse(match[3]);
+				$location.search(params);
+			}
 		}
 	});
 }]);
