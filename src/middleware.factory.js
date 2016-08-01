@@ -194,11 +194,12 @@ function middlewareFactory($injector, $q) {
 	 *
 	 * @returns {void}
 	 */
-	function redirectTo(route, params) {
+	function redirectTo(route, params, options) {
 		middleware.resolution.reject({
 			type: "redirectTo",
 			route: route,
-			params: params
+			params: params,
+			options: options
 		});
 	}
 }];
