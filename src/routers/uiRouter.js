@@ -28,23 +28,23 @@ function handleMiddleware($rootScope, $state, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
-		var pattern = /redirectTo\:(.*)/; 
-		var match;
-
-		// Only proceed if there is a match to the pattern
-		if ((match = pattern.exec(error)) !== null) {
+		// Only proceed if it is type redirectTo
+		if (error.type === "redirectTo") {
 			// Prevent state change error from working normally
 			event.preventDefault();
-			
-			// Redirect, allowing reloading and preventing url param inheritance
-			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
-			return $state.transitionTo(match[1], null, {
+
+			// Use provided transitionTo options or use default
+			var options = error.options || {
 				location: true,
 				inherit: false,
 				relative: $state.$current,
 				notify: true,
 				reload: true
-			});
+			};
+
+			// Redirect, allowing reloading and preventing url param inheritance
+			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
+			return $state.transitionTo(error.route, error.params, options);
 		}
 	});
 }]);

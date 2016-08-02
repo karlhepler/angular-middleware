@@ -13,7 +13,7 @@ var _globalMiddleware = {
 var $middlewareFactory = [
 '$injector', '$q',
 function middlewareFactory($injector, $q) {
-	
+
 	/**
 	 * This object is used to group
 	 * private middleware properties
@@ -48,6 +48,9 @@ function middlewareFactory($injector, $q) {
 
 		// Store a copy of the route parameters in the request
 		request.params = angular.copy(toParams);
+
+		// Store route name in the request
+		request.route = toRoute.name;
 
 		// Set the middleware index to 0
 		middleware.index = 0;
@@ -108,7 +111,7 @@ function middlewareFactory($injector, $q) {
 
 	/**
 	 * Gets the route middleware property
-	 * 
+	 *
 	 * @param   {object} route
 	 * @returns {array|string}
    */
@@ -197,8 +200,13 @@ function middlewareFactory($injector, $q) {
 	 *
 	 * @returns {void}
 	 */
-	function redirectTo(route) {
-		middleware.resolution.reject('redirectTo:' + route);
+	function redirectTo(route, params, options) {
+		middleware.resolution.reject({
+			type: "redirectTo",
+			route: route,
+			params: params,
+			options: options
+		});
 	}
 }];
 
@@ -280,21 +288,19 @@ function handleMiddleware($rootScope, $route, $location, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$routeChangeError', function handleMiddlewareRedirects(event, current, previous, rejection) {
-		var pattern = /redirectTo\:(.*)/; 
-		var match;
-
-		// Only proceed if there is a match to the pattern
-		if ((match = pattern.exec(rejection)) !== null) {
+		// Only proceed if it is type redirectTo
+		if (rejection.type === "redirectTo") {
 			// Prevent the route change from working normally
 			event.preventDefault();
 
 			// If the redirect route is the same, then just reload
-			if ( current.regexp.test(match[1]) ) {
+			if ( current.regexp.test(rejection.route) ) {
 				return $route.reload();
 			}
 
 			// The path is new, so go there!
-			$location.path(match[1]);
+			$location.path(rejection.route);
+			if (rejection.params) $location.search(rejection.params);
 		}
 	});
 }]);
@@ -329,23 +335,23 @@ function handleMiddleware($rootScope, $state, $middleware) {
 	 * Handle redirects from middleware
 	 */
 	$rootScope.$on('$stateChangeError', function handleMiddlewareRedirects(event, toState, toParams, fromState, fromParams, error) {
-		var pattern = /redirectTo\:(.*)/; 
-		var match;
-
-		// Only proceed if there is a match to the pattern
-		if ((match = pattern.exec(error)) !== null) {
+		// Only proceed if it is type redirectTo
+		if (error.type === "redirectTo") {
 			// Prevent state change error from working normally
 			event.preventDefault();
-			
-			// Redirect, allowing reloading and preventing url param inheritance
-			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
-			return $state.transitionTo(match[1], null, {
+
+			// Use provided transitionTo options or use default
+			var options = error.options || {
 				location: true,
 				inherit: false,
 				relative: $state.$current,
 				notify: true,
 				reload: true
-			});
+			};
+
+			// Redirect, allowing reloading and preventing url param inheritance
+			// https://github.com/angular-ui/ui-router/wiki/Quick-Reference#statetransitiontoto-toparams--options
+			return $state.transitionTo(error.route, error.params, options);
 		}
 	});
 }]);

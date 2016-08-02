@@ -10,7 +10,7 @@ var _globalMiddleware = {
 var $middlewareFactory = [
 '$injector', '$q',
 function middlewareFactory($injector, $q) {
-	
+
 	/**
 	 * This object is used to group
 	 * private middleware properties
@@ -45,6 +45,9 @@ function middlewareFactory($injector, $q) {
 
 		// Store a copy of the route parameters in the request
 		request.params = angular.copy(toParams);
+
+		// Store route name in the request
+		request.route = toRoute.name;
 
 		// Set the middleware index to 0
 		middleware.index = 0;
@@ -105,7 +108,7 @@ function middlewareFactory($injector, $q) {
 
 	/**
 	 * Gets the route middleware property
-	 * 
+	 *
 	 * @param   {object} route
 	 * @returns {array|string}
    */
@@ -194,7 +197,12 @@ function middlewareFactory($injector, $q) {
 	 *
 	 * @returns {void}
 	 */
-	function redirectTo(route) {
-		middleware.resolution.reject('redirectTo:' + route);
+	function redirectTo(route, params, options) {
+		middleware.resolution.reject({
+			type: "redirectTo",
+			route: route,
+			params: params,
+			options: options
+		});
 	}
 }];
