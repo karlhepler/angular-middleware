@@ -3,6 +3,10 @@
 > Laravel-like middleware for ngRoute & ui.router
 
 
+## Deprecation Notice
+
+> Please, by all means, if you use Angular 1x you can continue to use this... but don't expect this to be updated going forward. If you want to make feature additions or bug fixes, then I suggest forking it. I've moved away from Angular 1x and I'm focusing on Angular 4+ and VueJS. This plugin served me well several times in real-world production environments, and I hope it can do the same for you.
+
 
 ## Installation
 
